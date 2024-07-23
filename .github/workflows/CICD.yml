@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Has to be changed with Clients runner which they are using.
     container:
       image: python:3.12.0
     steps:
@@ -22,5 +22,5 @@ jobs:
       - name: Create branch in GitHub
         run: python branching.py
         env:
-          USERNAME: ${{ secrets.USERNAME }}
-          TOKEN: ${{ secrets.TOKEN }}
+          USERNAME: ${{ secrets.USERNAME }}  #Username of Github
+          TOKEN: ${{ secrets.TOKEN }}        #Personal access token has to be created
