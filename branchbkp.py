@@ -41,6 +41,7 @@ def rename_branches_from_excel(username, token, excel_file):
             'development': 'developmentbkp',
             'integration': 'integrationbkp',
             'release': 'releasebkp'
+            'feature': 'featurebkp'
         }
 
         for index, row in df.iterrows():
