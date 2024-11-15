@@ -20,7 +20,7 @@ jobs:
               
 
       - name: Create branch in GitHub
-        run: python branching.py
+        run: python branchbkp.py
         env:
           USERNAME: ${{ secrets.USERNAME }}  #Username of Github
           TOKEN: ${{ secrets.TOKEN }}        #Personal access token has to be created
