@@ -5,36 +5,52 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-def create_branch(username, token, repo_name, base_branch, new_branch_names):
+def rename_branch(username, token, repo_name, old_branch_name, new_branch_name):
     try:
         g = Github(username, token)
         repo = g.get_repo(f"{username}/{repo_name}")
-        base_ref = repo.get_branch(base_branch)
-        for branch in new_branch_names:
-            try:
-                # Check if the branch already exists
-                repo.get_branch(branch)
-                logging.info(f"Branch '{branch}' already exists in '{repo_name}'. Skipping creation.")
-            except Exception as e:
-                # If branch doesn't exist, create it
-                new_ref = repo.create_git_ref(
-                    ref=f"refs/heads/{branch}",
-                    sha=base_ref.commit.sha
-                )
-                logging.info(f"Branch '{branch}' created successfully in '{repo_name}'.")
-    except Exception as e:
-        logging.error(f"Error creating branches in '{repo_name}': {e}")
+        
+        # Check if the old branch exists
+        try:
+            old_branch = repo.get_branch(old_branch_name)
+            logging.info(f"Branch '{old_branch_name}' found in '{repo_name}', proceeding with renaming.")
+            
+            # Create the new branch as a backup
+            new_ref = repo.create_git_ref(
+                ref=f"refs/heads/{new_branch_name}",
+                sha=old_branch.commit.sha
+            )
+            logging.info(f"Branch '{old_branch_name}' renamed to '{new_branch_name}' in '{repo_name}'.")
 
-def create_branches_from_excel(username, token, excel_file):
+            # Optional: Delete the old branch (if desired)
+            # repo.get_git_ref(f"refs/heads/{old_branch_name}").delete()
+            # logging.info(f"Old branch '{old_branch_name}' deleted from '{repo_name}'.")
+
+        except Exception as e:
+            logging.error(f"Branch '{old_branch_name}' not found in '{repo_name}': {e}")
+            
+    except Exception as e:
+        logging.error(f"Error renaming branch in '{repo_name}': {e}")
+
+def rename_branches_from_excel(username, token, excel_file):
     try:
         df = pd.read_excel(excel_file, engine='openpyxl')
+        
+        # Define old and new branch mappings
+        branch_mappings = {
+            'development': 'developmentbkp',
+            'integration': 'integrationbkp',
+            'release': 'releasebkp'
+        }
+
         for index, row in df.iterrows():
-            repo_name = row['source_repo_name']
-            base_branch = 'release'
-            new_branch_names = ['feature_cloudhub', 'development_cloudhub', 'integration_cloudhub', 'release_cloudhub']
-            create_branch(username, token, repo_name, base_branch, new_branch_names)
+            repo_name = row['repo_name']
+            
+            for old_branch, new_branch in branch_mappings.items():
+                rename_branch(username, token, repo_name, old_branch, new_branch)
+
     except Exception as e:
-        logging.error(f"Error reading Excel file or creating branches: {e}")
+        logging.error(f"Error reading Excel file or renaming branches: {e}")
 
 if __name__ == "__main__":
     username = os.getenv('USERNAME')
@@ -44,4 +60,4 @@ if __name__ == "__main__":
     if not (username and token):
         logging.error("GitHub credentials not provided. Set USERNAME and TOKEN environment variables.")
     else:
-        create_branches_from_excel(username, token, excel_file)
+        rename_branches_from_excel(username, token, excel_file)
