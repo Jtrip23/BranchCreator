@@ -40,8 +40,8 @@ def rename_branches_from_excel(username, token, excel_file):
         branch_mappings = {
             'development': 'developmentbkp',
             'integration': 'integrationbkp',
-            'release': 'releasebkp'
-            'feature': 'featurebkp'
+            'release': 'releasebkp',
+            'featuretest': 'featurebkp'
         }
 
         for index, row in df.iterrows():
